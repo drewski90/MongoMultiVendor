@@ -1,0 +1,277 @@
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.7.13"></script>
+  </head>
+  <body>
+    <div id="app"
+    class="file-uploader"
+    :class="{'drag-highlight': draggingFiles}" 
+    @dragover="handleDragOver" 
+    @drop="handleFileDrop" 
+    @dragleave="handleDragEnd">
+      <button 
+      class="selector-button" 
+      @click="$refs.fileSelector.click()">
+      Select Files or Drag and Drop
+      </button>
+      <input 
+      style="display: none;"
+      ref="fileSelector"
+      type="file"
+      @change="handleFilesSelected" 
+      multiple="multiple"
+      />
+      <table width="100%" v-if="files.length > 0">
+        <tr class="table-heading">
+          <th>
+            File Name
+          </th>
+          <th>
+            Status
+          </th>
+          <th>
+            Size
+          </th>
+          <th>
+            Progress
+          </th>
+        </tr>
+        <tr 
+        v-for="file, index in files" 
+        :key="index" 
+        class="file-uploader-item">
+          <td>
+            {{"{{file.fileName}}"}}
+          </td>
+          <td style="text-transform: capitalize;">
+            {{"{{file.status}}"}}
+          </td>
+          <td style="text-transform: capitalize;">
+            {{"{{file.size / 1000000}} mb"}}
+          </td>
+          <td v-if="file.status == 'failed'">
+            <button @click="handleRetry(file)">Retry</button>
+          </td>
+          <td v-else>
+            {{"{{file.progress}}"}}%
+          </td>
+        </tr>
+      </table>
+      </div>
+    </div>
+    <script>
+
+      class FileContainer {
+        constructor(file) {
+          this.file = file
+          this.status = "pending"
+          this.selected = false
+          this.request = null
+          this.progress = 0
+        }
+        get fileName() {
+          return this.file.name
+        }
+        get contentType() {
+          return this.file.type
+        }
+        get size() {
+          return this.file.size
+        }
+        makeForm(fields) {
+            const formData = new FormData();
+            for (const[key, val] of Object.entries(fields))
+              formData.append(key, val);
+          formData.append('file', this.file)
+          return formData
+        }
+        upload(presignedPost, progressCallback) {
+          this.status = 'uploading'
+          const {fields, url} = presignedPost
+          const form = this.makeForm(fields)
+          return new Promise((res, rej) => {
+            const http = new XMLHttpRequest()
+            this.request = http
+            http.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                const done = e.position || e.loaded,
+                total = e.totalSize || e.total;
+                const progress = Math.round((done / total * 1000) / 10);
+                this.progress = progress
+                if (progressCallback) 
+                  progressCallback(progress)
+              }
+            }
+            http.open("POST", url)
+            http.onload = () => {
+              this.status = "completed"
+              res(http.response)
+            }
+            http.onerror = (e) => {
+              console.log(http)
+              this.status = "failed"
+              rej(e)
+            }
+            http.send(form)
+          })
+        }
+      }
+
+      function GQLRequest(endpoint, query, variables) {
+        return new Promise((res, rej) => {
+          const http = new XMLHttpRequest();
+          this.currentRequest = http
+          http.open("POST", endpoint);
+          http.withCredentials = true;
+          http.setRequestHeader(
+            "Content-Type", 
+            "application/json;charset=UTF-8"
+          );
+          const data = {
+            query,
+            variables
+          }
+          http.onload = () => res(JSON.parse(http.response))
+          http.onerror = (err) => rej(err)
+          http.send(JSON.stringify(data))
+        });
+      }
+
+      const presignedPostQuery = `
+        mutation ($fileName:String!, $contentType:String!) {
+          generatePresignedPost(contentType:$contentType, fileName:$fileName) {
+            link
+          }
+        }
+      `
+          
+      const mediaUploader = {
+        el: "#app",
+        data() {
+          return {
+            endpoint: "http://localhost:5000/graphql/",
+            files: [],
+            uploading: false,
+            draggingFiles: false
+          }
+        },
+        watch: {
+          files() {
+            this.startUpload()
+          }
+        },
+        methods: {
+          handleRetry(fileEntry) {
+            fileEntry.status = 'pending'
+            this.startUpload()
+          },
+          handleDragOver(event) {
+            this.draggingFiles = true
+            event.preventDefault()
+          },
+          handleDragEnd() {
+            this.draggingFiles = false
+          },
+          handleFileDrop(event) {
+            event.preventDefault();
+            if (event.dataTransfer.items) {
+              [...event.dataTransfer.items].forEach((item, i) => {
+                if (item.kind === 'file') {
+                  const file = item.getAsFile();
+                  this.addFile(file)
+                }
+              });
+            }
+          },
+          handleFilesSelected(event) {
+            [...event.target.files].forEach(file => {
+              this.addFile(file)
+            })
+          },
+          removeFile(fileItem) {
+            this.files = this.files.filter(
+              fi => fi !== fileItem
+              )
+          },  
+          addFile(file) {
+            const entry = new FileContainer(file)
+            entry.onprogress = (o) => {
+              console.log("onp", o)
+              this.$nextTick
+            }
+            this.files = [...this.files, new FileContainer(file)]
+          },
+          getNextFile() {
+            return this.files.find(
+              f => f.status == 'pending'
+            )
+          },
+          getPresignedPost(fileEntry) {
+            return GQLRequest(
+              this.endpoint,
+              presignedPostQuery,
+              {
+                fileName: fileEntry.fileName,
+                contentType: fileEntry.contentType
+              }
+            )
+          },
+          async startUpload() {
+            if (this.uploading) return
+            let nextFile = this.getNextFile();
+            if (nextFile) {
+              try {
+                this.uploading = true
+                const postResponse = await this.getPresignedPost(nextFile)
+                const presignedPost = postResponse.data.generatePresignedPost.link
+                await nextFile.upload(presignedPost)
+                this.uploading = false
+              } catch(e) {
+                nextFile.status = "failed"
+                this.uploading = false
+                this.startUpload()
+                console.log(e)
+              }
+              this.uploading = false
+              this.startUpload()
+            }
+          }
+        }
+      };
+      new Vue(mediaUploader)
+    </script>
+
+    <style>
+      .table-heading {
+        border:#4fc08d solid 1px;
+      }
+      .file-uploader {
+        border: 1px rgb(216, 216, 216) solid;
+        border-radius: 3;
+        padding: 15px;
+      }
+      .drag-highlight {
+        border: 1px solid turquoise;
+      }
+      #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 60px;
+      }
+
+      a,
+      button {
+        color: #4fc08d;
+      }
+
+      button {
+        background: none;
+        border: solid 1px;
+        border-radius: 2em;
+        font: inherit;
+        padding: 0.75em 2em;
+      }
+    </style>
+  </body>
+</html>
