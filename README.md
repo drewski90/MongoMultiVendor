@@ -66,7 +66,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - default = BooleanField
   - permissions = ListField(UserPermission)
  
-* Group: Documument
+* Group: Document
   - name = StringField
   - active = BooleanField
   - created = DateTimeField
