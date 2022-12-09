@@ -5,7 +5,19 @@ This project is intended to be a starting point for a multi-vendor platform. The
 
 ###### Models
 
-* BaseUser: Base User model (subclassed by User)
+* Address: - EmbeddedDocument
+
+  - line_1 = StringField
+  - line_2 = StringField
+  - city = StringField
+  - state = StringField
+  - postal_code = StringField
+  - country = StringField
+  - default = BooleanField
+  - coordinates = PointField
+
+
+* BaseUser: Base User model (subclassed by User) - Document
   - phone_number = PhoneNumberField (Custom field subclassed from StringField)
   - email = EmailField
   - email_verified = BooleanField
@@ -13,7 +25,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - updated = DateTimeField
   - role = ReferenceField(BaseRole)
 
-* User: a user of this platform
+* User: - Document
   - 
 * Role: attatched to a user/account and lists the permissions
 * Permission: single persmission entry
