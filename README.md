@@ -26,7 +26,43 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - role = ReferenceField(BaseRole)
 
 * User: - Document
-  - 
+  - avatar = ReferenceField(Media)
+  - email = EmailField
+  - email_verified = BooleanField
+  - password = PasswordField
+  - first_name = StringField
+  - last_name = StringField
+  - addresses = ListField(Address)
+      - line_1 = StringField
+      - line_2 = StringField
+      - city = StringField
+      - state = StringField
+      - postal_code = StringField
+      - country = StringField
+      - default = BooleanField
+      - coordinates = PointField
+  - created = DateTimeField(
+    default=datetime.utcnow, 
+    null=False
+  )
+  - status = StringField(
+    default="active",
+    choices=STATUS_STATES
+  )
+  - role = ReferenceField(
+    UserRole, 
+    reverse_delete_rule=DENY,
+    default=UserRole.get_default_role,
+    null=False
+  )
+  - groups = ListField(
+    ReferenceField(
+      UserGroup
+    ),
+    default=[],
+    reverse_delete_rule=PULL
+  )
+
 * Role: attatched to a user/account and lists the permissions
 * Permission: single persmission entry
   - action: name of action ie: "user_role.read"
