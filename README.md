@@ -5,19 +5,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
 
 ###### Models
 
-* Address: - EmbeddedDocument
-
-  - line_1 = StringField
-  - line_2 = StringField
-  - city = StringField
-  - state = StringField
-  - postal_code = StringField
-  - country = StringField
-  - default = BooleanField
-  - coordinates = PointField
-
-
-* BaseUser: Base User model (subclassed by User) - Document
+* BaseUser: Base User model (mixin of User Object) - Document
   - phone_number = PhoneNumberField (Custom field subclassed from StringField)
   - email = EmailField
   - email_verified = BooleanField
@@ -25,7 +13,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - updated = DateTimeField
   - role = ReferenceField(BaseRole)
 
-* User: - Document
+* User: - Document (subclassed from Base User)
   - avatar = ReferenceField(Media)
   - email = EmailField
   - email_verified = BooleanField
@@ -41,33 +29,41 @@ This project is intended to be a starting point for a multi-vendor platform. The
       - country = StringField
       - default = BooleanField
       - coordinates = PointField
-  - created = DateTimeField(
-    default=datetime.utcnow, 
-    null=False
-  )
-  - status = StringField(
-    default="active",
-    choices=STATUS_STATES
-  )
-  - role = ReferenceField(
-    UserRole, 
-    reverse_delete_rule=DENY,
-    default=UserRole.get_default_role,
-    null=False
-  )
-  - groups = ListField(
-    ReferenceField(
-      UserGroup
-    ),
-    default=[],
-    reverse_delete_rule=PULL
-  )
+  - created = DateTimeField
+  - status = StringField(default="active")
+  - role = ReferenceField(UserRole)
+  - groups = ListField(UserGroup)
 
-* Role: attatched to a user/account and lists the permissions
-* Permission: single persmission entry
-  - action: name of action ie: "user_role.read"
-  - description: short description of action
-* Group: used to group users
+* PasswordResetCode: Document
+  - user = ReferenceField(BaseUser)
+  - code = StringField
+  - created = DateTimeField
+  - attempts = IntField
+ 
+* BasePermission: Document
+  - name = StringField(max_length=80)
+  - created = DateTimeField(default=datetime.utcnow)
+  - is_admin = BooleanField(default=False)
+  - default = BooleanField(default=False)
+ 
+* UserPermission: Document
+  - name = StringField(max_length=80)
+  - created = DateTimeField(default=datetime.utcnow)
+  - is_admin = BooleanField(default=False)
+  - default = BooleanField(default=False)
+  - permissions = ListField(UserPermission)
+
+* BaseRole: Document
+  - name = StringField(max_length=80)
+  - created = DateTimeField(default=datetime.utcnow)
+  - is_admin = BooleanField(default=False)
+  - default = BooleanField(default=False)
+  - permissions = ListField(UserPermission)
+ 
+* Group: Documument
+  - name = StringField(required=True, min_length=1, max_length=255)
+  - active = BooleanField(default=True)
+  - created = DateTimeField(default=datetime.utcnow)
 
 ## Organizations
 
