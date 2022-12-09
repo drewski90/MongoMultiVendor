@@ -8,9 +8,9 @@ This project is intended to be a starting point for a multi-vendor platform. The
 
 * Organization: a single business or organization
 * Account: a single user membership to a organization, consists of a few notable references:
- - user
- - organization
- - role
+- user
+- organization
+- role
 
 There is a sessions module for loading (user, organization, and account) from a flask session. This module offers a decorator for loading each of the previously mentioned models from a user's session. example: account_loader wraps a
 
