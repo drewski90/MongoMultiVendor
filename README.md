@@ -6,12 +6,12 @@ This project is intended to be a starting point for a multi-vendor platform. The
 ###### Models
 
 * BaseUser: Base User model (subclassed by User)
-  phone_number = PhoneNumberField (Custom field subclassed from StringField)
-  email = EmailField
-  email_verified = BooleanField
-  created = DateTimeField
-  updated = DateTimeField
-  role = ReferenceField(BaseRole)
+  - phone_number = PhoneNumberField (Custom field subclassed from StringField)
+  - email = EmailField
+  - email_verified = BooleanField
+  - created = DateTimeField
+  - updated = DateTimeField
+  - role = ReferenceField(BaseRole)
 
 * User: a user of this platform
   - 
