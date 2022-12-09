@@ -58,6 +58,12 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - created = DateTimeField(default=datetime.utcnow)
   - is_admin = BooleanField(default=False)
   - default = BooleanField(default=False)
+ 
+* UserRole: Document (subclassed from BaseRole)
+  - name = StringField(max_length=80)
+  - created = DateTimeField(default=datetime.utcnow)
+  - is_admin = BooleanField(default=False)
+  - default = BooleanField(default=False)
   - permissions = ListField(UserPermission)
  
 * Group: Documument
