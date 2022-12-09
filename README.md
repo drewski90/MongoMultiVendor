@@ -30,7 +30,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
       - default = BooleanField
       - coordinates = PointField
   - created = DateTimeField
-  - status = StringField(default="active")
+  - status = StringField
   - role = ReferenceField(UserRole)
   - groups = ListField(UserGroup)
 
@@ -41,35 +41,35 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - attempts = IntField
  
 * BasePermission: Document
-  - name = StringField(max_length=80)
-  - created = DateTimeField(default=datetime.utcnow)
-  - is_admin = BooleanField(default=False)
-  - default = BooleanField(default=False)
+  - name = StringField
+  - created = DateTimeField
+  - is_admin = BooleanField
+  - default = BooleanField
  
 * UserPermission: Document
-  - name = StringField(max_length=80)
-  - created = DateTimeField(default=datetime.utcnow)
-  - is_admin = BooleanField(default=False)
-  - default = BooleanField(default=False)
+  - name = StringField
+  - created = DateTimeField
+  - is_admin = BooleanField
+  - default = BooleanField
   - permissions = ListField(UserPermission)
 
 * BaseRole: Document
-  - name = StringField(max_length=80)
-  - created = DateTimeField(default=datetime.utcnow)
-  - is_admin = BooleanField(default=False)
-  - default = BooleanField(default=False)
+  - name = StringField
+  - created = DateTimeField
+  - is_admin = BooleanField
+  - default = BooleanField
  
 * UserRole: Document (subclassed from BaseRole)
-  - name = StringField(max_length=80)
-  - created = DateTimeField(default=datetime.utcnow)
-  - is_admin = BooleanField(default=False)
-  - default = BooleanField(default=False)
+  - name = StringField
+  - created = DateTimeField
+  - is_admin = BooleanField
+  - default = BooleanField
   - permissions = ListField(UserPermission)
  
 * Group: Documument
-  - name = StringField(required=True, min_length=1, max_length=255)
-  - active = BooleanField(default=True)
-  - created = DateTimeField(default=datetime.utcnow)
+  - name = StringField
+  - active = BooleanField
+  - created = DateTimeField
 
 ## Organizations
 
