@@ -3,11 +3,15 @@
 This project is intended to be a starting point for a multi-vendor platform. The backend consists of a few models. 
 ## Users
 
+###### Models
+
 * User: a user of this platform
 * Role: attatched to a user/account and lists the permissions
 * Group: used to group users
 
 ## Organizations
+
+###### Models
 
 * Organization: a single business or organization
 * Account: a single user membership to a organization, consists of a few notable references:
