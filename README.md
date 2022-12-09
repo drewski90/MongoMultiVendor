@@ -5,7 +5,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
 
 ###### Models
 
-* BaseUser: Base User model (mixin of User Object) - Document
+* BaseUser - Document
   - phone_number = PhoneNumberField (Custom field subclassed from StringField)
   - email = EmailField
   - email_verified = BooleanField
@@ -13,7 +13,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - updated = DateTimeField
   - role = ReferenceField(BaseRole)
 
-* User: - Document (subclassed from Base User)
+* User(BaseUser) - Document
   - avatar = ReferenceField(Media)
   - email = EmailField
   - email_verified = BooleanField
@@ -34,39 +34,34 @@ This project is intended to be a starting point for a multi-vendor platform. The
   - role = ReferenceField(UserRole)
   - groups = ListField(UserGroup)
 
-* PasswordResetCode: Document
+* PasswordResetCode - Document
   - user = ReferenceField(BaseUser)
   - code = StringField
   - created = DateTimeField
   - attempts = IntField
  
-* BasePermission: Document
-  - name = StringField
-  - created = DateTimeField
-  - is_admin = BooleanField
-  - default = BooleanField
+* BasePermission - Document
+  - action = StringField
+  - description = StringField
  
-* UserPermission: Document
-  - name = StringField
-  - created = DateTimeField
-  - is_admin = BooleanField
-  - default = BooleanField
-  - permissions = ListField(UserPermission)
+* UserPermission(BasePermission) - Document
+  - action = StringField
+  - description = StringField
 
-* BaseRole: Document
+* BaseRole - Document
   - name = StringField
   - created = DateTimeField
   - is_admin = BooleanField
   - default = BooleanField
  
-* UserRole: Document (subclassed from BaseRole)
+* UserRole(BaseRole) - Document
   - name = StringField
   - created = DateTimeField
   - is_admin = BooleanField
   - default = BooleanField
   - permissions = ListField(UserPermission)
  
-* Group: Document
+* Group - Document
   - name = StringField
   - active = BooleanField
   - created = DateTimeField
@@ -75,11 +70,118 @@ This project is intended to be a starting point for a multi-vendor platform. The
 
 ###### Models
 
-* Organization: a single business or organization
-* Account: a single user membership to a organization, consists of a few notable references:
- - user
- - organization
- - role
+
+* Organization - Document
+  logo = ReferenceField(Media)
+  name = StringField
+  require_account_approval = BooleanField
+  status = StringField
+  payment_processors = ListField(
+    GenericEmbeddedDocumentField(
+      choices=(Square,)
+    ),
+  )
+  is_public = BooleanField(default=True)
+  updated = DateTimeField(default=datetime.utcnow, null=False)
+  created = DateTimeField(default=datetime.utcnow, null=False)
+
+* BusinessAddress - Document
+  - addresses = ListField(Address)
+      - line_1 = StringField
+      - line_2 = StringField
+      - city = StringField
+      - state = StringField
+      - postal_code = StringField
+      - country = StringField
+      - default = BooleanField
+      - coordinates = PointField
+  - organization = ReferenceField(Organization)
+  - is_public = BooleanField
+  - location_name = StringField
+  - business_hours = EmbeddedDocumentField(BusinessHours)
+  - updated = DateTimeField(default=datetime.utcnow, null=False)
+  - created = DateTimeField(default=datetime.utcnow, null=False)
+  - metadata = DictField()
+
+* AccountPermission(Permission) - Document
+  - action = StringField
+  - description = StringField
+
+* AccountRole(BaseRole) - Document
+  - name = StringField
+  - created = DateTimeField
+  - is_admin = BooleanField
+  - default = BooleanField
+  - permissions = ListField(UserPermission)
+  - organization = ReferenceField(Organization)
+
+* AccountGroup(BaseGroup) - Document
+  - organization = ReferenceField(Organization)
+  - name = StringField
+  - active = BooleanField
+  - created = DateTimeField
+
+class Account(Document, metaclass=FMADocumentMetaclass):
+  meta = {
+    "collection": "account_accounts",
+    "allow_inheritance": True,
+    "indexes": [
+      {"fields": ['user', 'organization'], "unique": True},
+      {"fields": ["groups", "organization"]}
+    ]
+  }
+  user = ReferenceField(
+    BaseUser,
+    reverse_delete_rule=CASCADE,
+    required=True
+  )
+  role = ReferenceField(
+    "AccountRole",
+    reverse_delete_rule=DENY,
+    default=lambda:AccountRole.get_default_role()
+  )
+  organization = ReferenceField(
+    Organization,
+    reverse_delete_rule = CASCADE
+  )
+  groups = ListField(
+    ReferenceField(
+      "AccountGroup",
+      reverse_delete_rule=PULL
+    )
+  )
+  status = StringField(
+    default="active",
+    choices=STATUS_STATES
+  )
+  created = DateTimeField(
+    default=datetime.utcnow, 
+    required=True
+  )
+
+  def __str__(self):
+    return f"{self.user.email} {self.organization}"
+
+  @property
+  def has_permission(self, name):
+    if self.role.has_permission(name):
+      return True
+    else:
+      split = name.split('.')
+      admin_permission = f"{split[0]}.admin_{split[1]}"
+      if self.user.role.has_permission(admin_permission):
+        return True
+    return False
+
+  @queryset_manager
+  @user_loaded
+  def secured_objects(cls, qs):
+    name = cls.__snakename__
+    if current_user.has_permission(f"{name}.read"):
+      return qs
+    else:
+      return qs(user=current_user.id)
+
 
 ## Sessions
 
