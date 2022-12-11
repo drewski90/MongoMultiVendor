@@ -7,6 +7,15 @@ from accounts.media import S3Object, cloudfront_signer
 import boto3
 from os import environ
 
+# temporary hacky way of setting environmental variables
+if "Stripe_API_KEY" not in environ:
+  with open('.env') as f:
+    for i in f.readlines():
+      if len(i.strip()) > 0:
+        key, val = i.split('=')
+        environ[key.strip()] = val.strip()
+        print(key.strip())
+
 stripe.api_key = environ['STRIPE_API_KEY']
 
 app = Flask(__name__)

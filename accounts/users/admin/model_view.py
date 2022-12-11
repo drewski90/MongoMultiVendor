@@ -17,7 +17,6 @@ def get_field_default_value(model, field):
     return default_value()
   return default_value
 
-
 class UserModelView(ModelView):
 
   column_exclude_list = ("cls", '_cls', 'CLS', 'Cls')
