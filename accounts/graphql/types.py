@@ -27,8 +27,6 @@ class SquareAddress(ObjectType):
     interfaces = (Address,)
   
   def resolve_line_1(root, ctx):
-    from pprint import pprint
-    pprint(root)
     return root['address_line_1']
   
   def resolve_line_2(root, ctx):

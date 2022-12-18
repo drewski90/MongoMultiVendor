@@ -85,7 +85,7 @@ This project is intended to be a starting point for a multi-vendor platform. The
   updated = DateTimeField(default=datetime.utcnow, null=False)
   created = DateTimeField(default=datetime.utcnow, null=False)
 
-* BusinessAddress - Document
+* OrganizationLocation - Document
   - addresses = ListField(Address)
       - line_1 = StringField
       - line_2 = StringField

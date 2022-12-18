@@ -1,4 +1,4 @@
-scopes = set(
+scope = set(
   [
   "APPOINTMENTS_WRITE",
   "APPOINTMENTS_READ",

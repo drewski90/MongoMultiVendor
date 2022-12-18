@@ -14,7 +14,6 @@ if "Stripe_API_KEY" not in environ:
       if len(i.strip()) > 0:
         key, val = i.split('=')
         environ[key.strip()] = val.strip()
-        print(key.strip())
 
 stripe.api_key = environ['STRIPE_API_KEY']
 

@@ -12,6 +12,7 @@ from ..users import (
 )
 from ..document import FMADocumentMetaclass
 from ..users.status import STATUS_STATES
+from ..users.fields import MilitaryTimeField, PhoneNumberField
 from time import time
 from ..media import Media
 from datetime import datetime
@@ -26,7 +27,7 @@ from mongoengine import (
   CASCADE,
   DENY,
   StringField,
-  IntField,
+  EmailField,
   ReferenceField,
   EmbeddedDocumentField,
   EmbeddedDocument,
@@ -118,14 +119,11 @@ class Organization(Document, metaclass=FMADocumentMetaclass):
 
 class BusinessDay(EmbeddedDocument):
 
-  start_hour = IntField(min=0, max=23, required=True, default=0)
-  start_minutes = IntField(min=0, max=59, required=True, default=0)
-  end_hour = IntField(min=0, max=23, required=True, default=23)
-  end_minutes = IntField(min=0, max=59, required=True, default=59)
+  open_time = MilitaryTimeField(required=True)
+  close_time = MilitaryTimeField(required=True)
 
 class BusinessHours(EmbeddedDocument):
 
-  timezone = StringField(max_length=100, null=False)
   sunday = EmbeddedDocumentField(BusinessDay, null=True)
   monday = EmbeddedDocumentField(BusinessDay, null=True)
   tuesday = EmbeddedDocumentField(BusinessDay, null=True)
@@ -134,12 +132,14 @@ class BusinessHours(EmbeddedDocument):
   friday = EmbeddedDocumentField(BusinessDay, null=True)
   saturday = EmbeddedDocumentField(BusinessDay, null=True)
 
-class BusinessAddress(Document):
+class OrganizationLocation(Document):
   meta = {"collection": "account_business_locations"}
-  address = EmbeddedDocumentField(Address, required=True)
   organization = ReferenceField(Organization, required=True, reverse_delete_rule=CASCADE)
+  location_name = StringField(null=True, max_length=80)
+  business_email = EmailField()
+  phone_number = PhoneNumberField()
+  address = EmbeddedDocumentField(Address, required=True)
   is_public = BooleanField(default=True)
-  location_name = StringField(null=True)
   business_hours = EmbeddedDocumentField(BusinessHours)
   updated = DateTimeField(default=datetime.utcnow, null=False)
   created = DateTimeField(default=datetime.utcnow, null=False)

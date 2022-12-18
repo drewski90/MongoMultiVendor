@@ -15,14 +15,14 @@ from ..models import (
   Account,
   AccountGroup,
   AccountRole,
-  BusinessAddress
+  OrganizationLocation
 )
 from .types import (
   OrganizationType,
   AccountRoleType,
   AccountType,
   AccountGroupType,
-  BusinessAddressType
+  OrganizationLocationType
 )
 
 
@@ -45,10 +45,10 @@ class OrganizationSchema(GQLModelSchema, AccountAccessMixin):
   object_type = OrganizationType
 
 
-class BusinessAddressSchema(GQLModelSchema, AccountAccessMixin):
-  model = BusinessAddress
-  object_type = BusinessAddressType
-  verbose_name_plural = "BusinessAddresses"
+class OrganizationLocationSchema(GQLModelSchema, AccountAccessMixin):
+  model = OrganizationLocation
+  object_type = OrganizationLocationType
+  verbose_name_plural = "OrganizationLocationes"
   
   create_fields = [
     "!*",

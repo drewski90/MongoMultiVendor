@@ -1,6 +1,6 @@
 from mongoengine.base.common import _document_registry
 from .media import install_media
-from .payments import SquarePayments
+from .apis.square import SquareAPI
 import importlib
 from .admin import Admin
 from .graphql import Graph
@@ -51,7 +51,14 @@ class App:
       self.organizations = importlib.import_module(f"{__name__}.organizations")
     babel = Babel(flask_app)
     babel.localeselector(self.get_locale)
-    self.square = SquarePayments(flask_app)
+    config = flask_app.config['SQUARE']
+    mode = config['mode']
+    self.square = SquareAPI(
+      environment="production",
+      access_token=config[mode]['access_token'],
+      application_secret=config[mode]['application_secret'],
+      application_id=config['application_id']
+    )
     install_media(flask_app)
     self.initialize_app()
 

@@ -9,7 +9,7 @@ from ..sessions import (
 )
 from .admin import (
   OrganizationView,
-  BusinessAddressView,
+  OrganizationLocationView,
   AccountView,
   AccountRoleView,
   AccountGroupView,
@@ -22,7 +22,8 @@ from .models import (
   AccountGroup, 
   AccountRole,
   AccountPermission,
-  BusinessAddress
+  OrganizationLocation,
+  Address
 )
 from . import graphql
 from flask import session, request
@@ -50,10 +51,10 @@ Admin.add_views(
     category=ADMIN_CATEGORY,
     name="Organizations"
   ),
-  BusinessAddressView(
-    BusinessAddress,
+  OrganizationLocationView(
+    OrganizationLocation,
     category=ADMIN_CATEGORY,
-    name="Addresss"
+    name="Locations"
   ),
   AccountView(
     Account,

@@ -1,5 +1,3 @@
-from .payment_method import PaymentMethod
-from ...utils import get_square
 from graphene import(
   ID,
   String,
@@ -8,7 +6,7 @@ from graphene import(
   ObjectType
 )
 
-class Customer(Interface):
+class SquareCustomerType(Interface):
   id = ID()
   user_id = ID()
   first_name = String()
@@ -17,7 +15,7 @@ class Customer(Interface):
   phone_number = String()
   created = String()
   updated = String()
-  payment_methods = List(PaymentMethod)
+  # payment_methods = List(PaymentMethod)
 
   @classmethod
   def resolve_type(cls, instance, info):
@@ -25,26 +23,30 @@ class Customer(Interface):
       return SquareCustomerType
 
 class SquareCustomerType(ObjectType):
-
-  class Meta:
-    interfaces = (Customer, )
-
-  payment_methods = List(PaymentMethod)
+  id = ID()
+  user_id = ID()
+  first_name = String()
+  last_name = String()
+  email = String()
+  phone_number = String()
+  created = String()
+  updated = String()
+  # payment_methods = List(PaymentMethod)
 
   def resolve_user_id(r, c):
     return r.get('reference_id')
 
-  def resolve_payment_methods(r, c):
-    cards_api = get_square().client.cards
-    result = cards_api.list_cards(
-      customer_id=r['id'],
-      include_disabled=False
-    )
-    if result.is_success() and 'cards' in result.body:
-      return result.body['cards']
-    elif result.is_error():
-      print(result.errors)
-    return []
+  # def resolve_payment_methods(r, c):
+  #   cards_api = get_square().client.cards
+  #   result = cards_api.list_cards(
+  #     customer_id=r['id'],
+  #     include_disabled=False
+  #   )
+  #   if result.is_success() and 'cards' in result.body:
+  #     return result.body['cards']
+  #   elif result.is_error():
+  #     print(result.errors)
+  #   return []
 
   def resolve_email(r, c):
     return r['email_address']

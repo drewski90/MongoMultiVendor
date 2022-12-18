@@ -20,7 +20,7 @@ class OrganizationType(MongoType):
   required_account_approval = Boolean()
   status = String()
   created = DateTime()
-  updated = Int()
+  updated = DateTime()
   payment_processors = List(String)
 
 class BusinessDayType(ObjectType):
@@ -39,13 +39,13 @@ class BusinessHoursType(ObjectType):
   friday = Field(BusinessDayType)
   saturday = Field(BusinessDayType)
 
-class BusinessAddressType(MongoType):
+class OrganizationLocationType(MongoType):
   address = Field(AddressType)
   organization = Field(OrganizationType)
   location_name = String()
   business_hours = Field(BusinessHoursType)
   created = DateTime()
-  updated = Int()
+  updated = DateTime()
 
 class AccountRoleType(UserRoleType):
   organization = ObjectId()

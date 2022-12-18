@@ -6,7 +6,7 @@ from flask import url_for, redirect, request, flash
 class OrganizationView(AccountModelView):
   form_excluded_columns = ['logo']
 
-class BusinessAddressView(AccountModelView):
+class OrganizationLocationView(AccountModelView):
   pass
 
 class AccountView(AccountModelView):

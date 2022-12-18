@@ -5,9 +5,9 @@ from graphene import (
   Field,
   List
 )
-from ....graphql import Address
+from .....graphql import Address
 
-class LocationType(ObjectType):
+class SquareLocationType(ObjectType):
   id = ID()
   name = String()
   address = Field(Address)

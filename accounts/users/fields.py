@@ -4,6 +4,15 @@ from ..graphql import mongofield_conversion
 from graphene import String
 from re import compile
 
+class MilitaryTimeField(StringField):
+
+  regex = compile("([01]\d|2[0-3]):?[0-5]\d")
+
+  def validate(self, value):
+    super(MilitaryTimeField, self).validate(value)
+    assert self.__class__.regex.search(value) is not None, \
+      f"{value} is not formatted in military time (24hr format)"
+
 class PasswordField(BinaryField):
 
   def __set__(self, obj, value):
