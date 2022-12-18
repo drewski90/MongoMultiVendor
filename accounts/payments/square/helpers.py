@@ -36,7 +36,7 @@ def get_credentials(app):
       application_secret = config[mode]['application_secret'],
       application_id=config['application_id']
     )
-  return CREDENTIALS    
+  return CREDENTIALS
 
 def authorization_url(client_id, state=None, redirect_uri=None, scope=[]):
   params = {

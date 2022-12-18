@@ -16,6 +16,7 @@ from ...organizations import Organization
 class SquarePayments:
 
   def __init__(self, flask_app):
+    
     self.flask_app = flask_app
     credentials = get_credentials(flask_app)
     self.client = Client(
@@ -93,26 +94,6 @@ class SquareQueries(ObjectType):
       state=current_org.id,
       redirect_uri=SquarePayments.oauth_hook.url()
     )
-
-  # def resolve_availability(*args,location, start_timestamp=None, end_timestamp=None):
-  #   start, end = make_date_range(start_timestamp, end_timestamp)
-  #   result = square_merchant.client.bookings.search_availability(
-  #     body = {
-  #       "query": {
-  #         "filter": {
-  #           "start_at_range": {
-  #             "start_at": start,
-  #             "end_at": end
-  #           },
-  #           "segment_filters": [
-  #             {"service_variation_id": "ZUL635FKQ45RYMITJWPXB5RC"}
-  #           ],
-  #           "location_id": location
-  #         }
-  #       }
-  #     }
-  #   )
-  #   return result.body
 
 
 __all__ = [
