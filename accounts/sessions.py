@@ -75,7 +75,7 @@ class Accounts:
 def account_loaded(func):
   def wrapper(*args, **kwargs):
     assert current_account != None, \
-      'You have not selected a account yet'
+      'You are not logged in'
     return func(*args, **kwargs)
   return wrapper
 

@@ -1,4 +1,5 @@
 from graphene.types.generic import GenericScalar
+from ..sessions import user_loaded
 from mongoengine.base.common import _document_registry as model_registry
 from ..sessions import current_user
 from ..graphql import MongoType, GQLModelSchema
@@ -48,23 +49,25 @@ class GeneratePresignedPost(Mutation):
 
   class Arguments:
     media = MediaPostInputType(required=True)
-    
-  def mutate(root, ctx, media):
+  
+  @classmethod
+  @user_loaded
+  def mutate(cls, root, ctx, media):
     models = get_media_models()
     model = models.get(media['resource'])
     assert model is not None, \
       f"{media['resource']} does not exist ({list(models.keys())})"
     link = model.generate_presigned_post(**media['file'])
-    print("CURRENT USER", current_user)
-    return GeneratePresignedPost(link=link)
+    return cls(link=link)
 
 class MediaType(MongoType):
   file_name = String()
+  description = String()
   access = String()
   content_length = Int()
   content_type = String()
   created = DateTime()
-  updated = Int()
+  updated = DateTime()
   url = String()
 
 class MediaModelSchema(GQLModelSchema):

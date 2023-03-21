@@ -59,7 +59,7 @@ class ResetPassword(Mutation):
   id = ObjectId()
   
   class Arguments:
-    email = String()
+    email = String(required=True)
 
   def mutate(root, ctx, email):
     user = User.search_by_identifier(email)
@@ -74,7 +74,6 @@ class ResetPassword(Mutation):
         upsert=True,
         new=True
       )
-      print(reset_code)
       pw_reset = reset_code.id
     return ResetPassword(id=pw_reset)
 
@@ -85,9 +84,9 @@ class ChangePassword(Mutation):
   user = Field(UserType)
 
   class Arguments:
-    code = String()
-    id = ObjectId()
-    password = String()
+    code = String(required=True)
+    id = ObjectId(required=True)
+    password = String(required=True)
   
   def mutate(root, ctx, code, id, password):
     pw_reset = PasswordResetCode.objects.get(id=id, code=code)

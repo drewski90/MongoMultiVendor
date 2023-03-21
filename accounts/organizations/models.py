@@ -42,7 +42,7 @@ class Organization(Document, metaclass=FMADocumentMetaclass):
 
   meta = {
     "collection": "account_organizations",
-    "indexes": ['is_public']
+    "indexes": ['public']
   }
   logo = ReferenceField(Media, null=True, reverse_delete_rule=NULLIFY)
   name = StringField(
@@ -64,7 +64,7 @@ class Organization(Document, metaclass=FMADocumentMetaclass):
     ),
     default=[]
   )
-  is_public = BooleanField(default=True)
+  public = BooleanField(default=True)
   updated = DateTimeField(default=datetime.utcnow, null=False)
   created = DateTimeField(default=datetime.utcnow, null=False)
 
@@ -79,7 +79,8 @@ class Organization(Document, metaclass=FMADocumentMetaclass):
   def get_default_admin_role(self):
     role = AccountRole.objects.filter(
       organization=None,
-      is_admin=True).first()
+      is_admin=True
+    ).first()
     if not role:
       role = AccountRole(
         name="Administrator",
@@ -89,7 +90,6 @@ class Organization(Document, metaclass=FMADocumentMetaclass):
       role.save()
     return role
   
-  @user_loaded
   def save(self, *args, **kwargs):
     if self.pk is None:
       assert current_user.has_permission('organization.create'), \
@@ -139,7 +139,7 @@ class OrganizationLocation(Document):
   business_email = EmailField()
   phone_number = PhoneNumberField()
   address = EmbeddedDocumentField(Address, required=True)
-  is_public = BooleanField(default=True)
+  public = BooleanField(default=True)
   business_hours = EmbeddedDocumentField(BusinessHours)
   updated = DateTimeField(default=datetime.utcnow, null=False)
   created = DateTimeField(default=datetime.utcnow, null=False)
@@ -221,15 +221,12 @@ class Account(Document, metaclass=FMADocumentMetaclass):
     return f"{self.user.email} {self.organization}"
 
   @property
-  def has_permission(self, name):
-    if self.role.has_permission(name):
-      return True
-    else:
-      split = name.split('.')
-      admin_permission = f"{split[0]}.admin_{split[1]}"
-      if self.user.role.has_permission(admin_permission):
-        return True
-    return False
+  def has_permission(self):
+    return self.role.has_permission
+
+  @property
+  def assert_permission(self):
+    return self.role.assert_permission
 
   @queryset_manager
   @user_loaded

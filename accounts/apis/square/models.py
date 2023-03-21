@@ -11,14 +11,10 @@ from mongoengine import (
   CASCADE
 )
 
-class AuthorizationAttempt(Document):
-  meta = {"collection": "square_oauth"}
-  organization = ReferenceField(Organization)
-
 class SquareOAuth(Document, SquareDocumentMixin):
   meta = {
     "collection": "account_oauth",
-    'indexes': [{"fields": ['organization'], "unique": True}]
+    'indexes': ['organization']
   }
   organization = ReferenceField(
     Organization,

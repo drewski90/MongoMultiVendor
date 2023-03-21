@@ -49,6 +49,10 @@ class GraphBuilder:
         issubclass(type, Interface)
       ), \
         f"{type.__name__} must be a subclass of {ObjectType}"
+      # type_names = [i.__name__ for i in self._type_classes]
+      # assert type.__name__ not in type_names, \
+      #   f"{type.__name__} already registered"
+      # print(f"add {type.__name__}")
       self._type_classes.append(type)
 
   @property

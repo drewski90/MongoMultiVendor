@@ -72,6 +72,8 @@ class Permission(Document, metaclass=FMADocumentMetaclass):
     return qs
 
   def __str__(self):
+    if self.description:
+      return self.description
     return self.action
 
 class UserPermission(Permission):
@@ -113,15 +115,29 @@ class BaseRole(Document, metaclass=FMADocumentMetaclass):
     role.save()
     return role
 
-  def has_permission(self, name):
-    print(f"\033[92m {self.__class__.__name__} {name} \033[0m")
+  @property
+  def permission_class(self):
+    return self.__class__.permissions.field.document_type
+
+  def has_permission(self, action):
+    # print(f"\033[92m {self.__class__.__name__} {action} \033[0m")
     if self.is_admin:
       return True
-    if " " in name:
-      raise Exception(f'permissions do not contain open space ({name})')
+    if " " in action:
+      raise Exception(f'permissions do not contain open space ({action})')
     else:
-      test_item = lambda item: item.action == name
+      test_item = lambda item: item.action == action
       return next(filter(test_item, self.permissions), None)
+
+  def assert_permission(self, action):
+    access = self.has_permission(action)
+    if not access:
+      try:
+        perm = self.permission_class.objects.get(action=action)
+      except:
+        self.permission_class(action=action)
+      msg = f"Permission denied: {perm.description or perm.action}"
+      raise Exception(msg)
 
   def clean(self):
     if changes := getattr(self, '_changed_fields', None):
@@ -325,6 +341,10 @@ class User(BaseUser):
   @property
   def has_permission(self):
     return self.role.has_permission
+
+  @property
+  def assert_permission(self):
+    return self.role.assert_permission
 
 class PasswordResetCode(Document):
   meta = {

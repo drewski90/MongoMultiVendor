@@ -241,7 +241,7 @@ class GQLModelSchema(metaclass=GQLModelSchemaMetaclass):
     if page and page_size:
         query = query.skip((page * page_size) - page_size)
 
-    return list(query)
+    return query
 
   @classmethod
   def get_one(cls, id):

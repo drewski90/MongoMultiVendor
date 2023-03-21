@@ -2,12 +2,13 @@ from ...graphql import GQLModelSchema, ObjectId
 from ...sessions import (
   current_user, 
   user_loaded, 
-  current_account
+  current_account,
 )
 from flask import session
 from graphene import (
   Field,
-  Mutation
+  Mutation,
+  ID
 )
 
 from ..models import (
@@ -48,7 +49,7 @@ class OrganizationSchema(GQLModelSchema, AccountAccessMixin):
 class OrganizationLocationSchema(GQLModelSchema, AccountAccessMixin):
   model = OrganizationLocation
   object_type = OrganizationLocationType
-  verbose_name_plural = "OrganizationLocationes"
+  verbose_name_plural = "organizationLocations"
   
   create_fields = [
     "!*",
@@ -66,14 +67,15 @@ class AccountRoleSchema(GQLModelSchema, AccountAccessMixin):
   object_type = AccountRoleType
   
 class AccountSchema(GQLModelSchema, AccountAccessMixin):
+
   model = Account
   object_type = AccountType
-
   my_account = Field(AccountType)
 
+  @user_loaded
   def resolve_my_account(root, ctx):
-    return current_account
-  
+    if current_account is not None:
+      return current_account  
 
 class AccountGroupSchema(GQLModelSchema, AccountAccessMixin):
   model = AccountGroup
