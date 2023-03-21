@@ -9,7 +9,3 @@ There is a sessions module for loading (user, organization, and account) from a 
 ## Graphql
 
 Graphene can get a little messy to work with when your building a lot of mutations so there is a graphql module in this package that inspired by flask-admin. It allows you to quickly create the graphql crud operations for your mongoengine models with minimal code.
-
-## Payments
-
-Each user goes into a main user pool, outside of the bounds of any one organization which allows for users to sign up once and join any organization without going through the registration process a second time.
